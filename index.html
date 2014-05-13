@@ -8,10 +8,10 @@
     <script src="//vk.com/js/api/openapi.js" type="text/javascript"></script>
 </head>
 <body style="text-align:center" onload="bodyLoaded()">
-<div id="login_button" onclick="VK.Auth.login(authInfo);"></div>
+<div id="login_button" onclick="VK.Auth.login(authInfo, VK.access.PHOTOS);"></div>
 <div id="flashObject"></div>
 <div id="container"></div>
-<button id="upload_button" onclick="superAction()">upload</button>
+<button id="upload_button" onclick="superAction()">Login VKontakte</button>
 <script type="text/javascript">
 
 function bodyLoaded() {
@@ -56,12 +56,17 @@ function loadComplete() {
 
 function authInfo(response) {
     if (response.session) {
-        loadProfile();
+        //loadProfile();
     }
 }
 
 
 function loadProfile() {
+    console.log('loadProfile');
+    var bodyEl = document.getElementsByTagName('body');
+    var buttonEl = document.getElementById('upload_button');
+    bodyEl[0].removeChild(buttonEl);
+
     VK.Api.call('users.get',
             {   uid: parseInt(VK.Auth.getSession().mid),
                 fields: 'photo_max'},
@@ -171,9 +176,7 @@ function drawImage(imageObj) {
 
 function superAction() {
     if (VK.Auth.getSession() == null) {
-        VK.Auth.login(authInfo);
-    } else {
-        //uploadImage(); TODO: remove button
+        VK.Auth.login(authInfo, VK.access.PHOTOS);
     }
 }
 
@@ -202,23 +205,31 @@ function getImageData() {
 function saveProfileImage(data) {
     var d = JSON.parse(data);
     console.log(d);
-/*
-    var script = document.createElement("script");
-    script.type = "text/javascript";
-    script.src = "https://api.vk.com/method/photos.saveProfilePhoto?server=" + d.server + '&photo=' + d.photo + '&hash=' + d.hash + '&access_token=' + VK.Auth.getSession().sid;
-    console.log(script.src);
-*/
-    VK.Api.call('photos.saveProfilePhoto',
-            {server: d.server,
-                hash: d.hash,
-                photo: d.photo},
-            function (r) {
-                if (r.response) {
-                    console.log(r.response);
-                    //saveProfileImagePopUp(r.response.photo_hash);
-                    console.log('upload');
-                }
-            })
+
+    console.log("https://api.vk.com/method/photos.saveProfilePhoto?server=" + d.server + '&photo=' + d.photo + '&hash=' + d.hash + '&access_token=' + VK.Auth.getSession().sid);
+
+
+    var code = 'var d = API.photos.saveProfilePhoto({server: ' + d.server +', photo: "' + d.photo +'", hash: "' + d.hash + '"}); return [d];';
+
+    console.log(code);
+    VK.Api.call('execute',{code: code}, function(r){
+        console.log(r);
+        if(r.execute_errors){
+
+            VK.Api.call('photos.saveProfilePhoto',
+                    {server: d.server,
+                        hash: d.hash,
+                        photo: d.photo},
+                    function (r) {
+                        if (r.response) {
+                            console.log(r.response);
+                            //saveProfileImagePopUp(r.response.photo_hash);
+                            console.log('upload');
+                        }
+                    })
+
+        }
+    });
 
 
 }

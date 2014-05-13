@@ -24,7 +24,7 @@ import flash.display.Sprite;
 import flash.text.TextField;
 
 import vk.ui.VKButton;
-[SWF(width="200", height="100", backgroundColor="#000000", frameRate="30")]
+[SWF(width="200", height="100", backgroundColor="#FFFFFF", frameRate="30")]
 
 public class LoadImage extends Sprite {
     public function loadImage(url:String):void {
@@ -159,7 +159,7 @@ public class LoadImage extends Sprite {
             ExternalInterface.addCallback("DataUpload", DataUpload);
             ExternalInterface.call("loadComplete");
 
-            var button:SimpleButton = new VKButton("Upload");
+            var button:SimpleButton = new VKButton("Сохранить изобаржение");
             button.x = 0;
             button.y = 0;
             button.addEventListener(MouseEvent.CLICK, dataUploadClick);
