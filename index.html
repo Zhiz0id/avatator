@@ -2,29 +2,237 @@
 <html>
 <head>
     <title>loadImage</title>
-    <script type="text/javascript" src="swfobject.js"></script>
-    <script type="text/javascript">
-
-        var url = "http://cs618319.vk.me/v618319413/4f39/BTa0U8UFXbc.jpg"; // I'm using a static url but you'll get the idea
-        var swf;
-
-        var flashvars = {};
-        var params = {};
-        var attributes = {id: "flashObject", name: "flashObject"};
-        swfobject.embedSWF("loadImage.swf", "flashObject", "1", "1", "9.0.0", "expressInstall.swf", flashvars, params, attributes);
-
-        function loadComplete() {
-            swf = document.getElementById("flashObject");
-            swf.loadImage(url);
-        }
-
-        function setImage(baseSixtyFourEncodedImage) {
-            document.getElementById("myImage").src = "data:image/jpeg;base64," + baseSixtyFourEncodedImage;
-        }
-    </script>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <script src="swfobject.js" type="text/javascript"></script>
+    <script src="/bower_components/kineticjs/kinetic.js" type="text/javascript"></script>
+    <script src="//vk.com/js/api/openapi.js" type="text/javascript"></script>
 </head>
-<body style="text-align:center">
+<body style="text-align:center" onload="bodyLoaded()">
+<div id="login_button" onclick="VK.Auth.login(authInfo);"></div>
 <div id="flashObject"></div>
-<img id="myImage" src="hackday-logo.png">
+<div id="container"></div>
+<button id="upload_button" onclick="superAction()">upload</button>
+<script type="text/javascript">
+
+function bodyLoaded() {
+    VK.init({
+        apiId: 4358828
+    });
+
+    VK.Observer.subscribe('auth.login', function (response) {
+        loadProfile();
+    });
+
+    VK.Auth.getLoginStatus(authInfo);
+
+}
+
+
+// url is a default main image
+var url = "http://cs618319.vk.me/v618319413/4f39/BTa0U8UFXbc.jpg";
+var logo = "/hackday-logo.png";
+var sign = "http://helloiloveyou.рф";
+var swf;
+
+var stage;
+var _uploadUrl;
+var _uploadData;
+
+
+var flashvars = {};
+var params = {};
+var attributes = {id: "flashObject", name: "flashObject"};
+
+
+function loadSwf() {
+    swfobject.embedSWF("loadImage.swf", "flashObject", "200", "100", "9.0.0", "expressInstall.swf", flashvars, params, attributes);
+}
+//when loadImage.swf loaded it call this function
+function loadComplete() {
+    swf = document.getElementById("flashObject");
+    swf.loadImage(url);
+}
+
+
+function authInfo(response) {
+    if (response.session) {
+        loadProfile();
+    }
+}
+
+
+function loadProfile() {
+    VK.Api.call('users.get',
+            {   uid: parseInt(VK.Auth.getSession().mid),
+                fields: 'photo_max'},
+            function (r) {
+                if (r.response) {
+                    if (r.response[0].photo_max)
+                        url = r.response[0].photo_max;
+
+                    loadSwf();
+                }
+            });
+
+    VK.Api.call('photos.getProfileUploadServer',
+            {},
+            function (r) {
+                if (r.response) {
+                    _uploadUrl = r.response.upload_url;
+                }
+            })
+}
+//when loadImage complete(in loadImage.swf) it call this function
+function setImage(baseSixtyFourEncodedImage) {
+
+    var imageObj = new Image();
+    imageObj.onload = function () {
+        drawImage(imageObj);
+    };
+    imageObj.src = "data:image/jpeg;base64," + baseSixtyFourEncodedImage;
+}
+
+
+function dragStyle(styleMe) {
+    // add cursor styling
+    styleMe.on('mouseover', function () {
+        document.body.style.cursor = 'pointer';
+    });
+    styleMe.on('mouseout', function () {
+        document.body.style.cursor = 'default';
+        createImageData();
+    });
+
+}
+
+function drawImage(imageObj) {
+
+    var backgroundW = 500;
+    var backgroundH = imageObj.height / (imageObj.width / 500);
+
+    var stage = new Kinetic.Stage({
+        container: "container",
+        width: backgroundW,
+        height: backgroundH
+    });
+    this.stage = stage;
+
+    var layer = new Kinetic.Layer();
+
+
+    var backgroundImg = new Kinetic.Image({
+        image: imageObj,
+        width: backgroundW,
+        height: backgroundH,
+        draggable: false
+    });
+
+    var logoImg;
+    var logoObj = new Image();
+    logoObj.onload = function () {
+        logoImg = new Kinetic.Image({
+            image: logoObj,
+            x: backgroundW / 20,
+            y: backgroundH - ((backgroundH / (backgroundW / (backgroundW / 10) )) + (backgroundW / 20)),
+            width: backgroundW / 10,
+            height: logoObj.height / (logoObj.width / (backgroundW / 10)),
+            draggable: true
+        });
+
+        dragStyle(logoImg);
+
+        layer.add(logoImg);
+        layer.draw();
+
+    };
+
+    logoObj.src = logo;
+
+    var signText = new Kinetic.Text({
+        x: (backgroundW / 20) + (backgroundW / 10),
+        y: backgroundH - ((backgroundH / (backgroundW / (backgroundW / 10) )) + (backgroundW / 20)),
+        text: sign,
+        fontSize: stage.width() / 12,
+        fontFamily: 'sans-serif',
+        fill: 'white',
+        stroke: 'black',
+        strokeWidth: 1,
+        draggable: true
+    });
+
+    dragStyle(signText);
+
+    layer.add(backgroundImg);
+    layer.add(signText);
+    stage.add(layer);
+    createImageData()
+}
+
+
+function superAction() {
+    if (VK.Auth.getSession() == null) {
+        VK.Auth.login(authInfo);
+    } else {
+        //uploadImage(); TODO: remove button
+    }
+}
+
+function getUploadURL() {
+    return _uploadUrl;
+    //postImage(r.response.upload_url);
+}
+
+function createImageData() {
+
+    stage.toImage({
+        callback: function (imageURL) {
+            _uploadData = imageURL.src.substr(22);
+        },
+        mimeType: 'image/png',
+        quality: 1
+
+    });
+}
+
+function getImageData() {
+    return _uploadData;
+
+}
+
+function saveProfileImage(data) {
+    var d = JSON.parse(data);
+    console.log(d);
+/*
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src = "https://api.vk.com/method/photos.saveProfilePhoto?server=" + d.server + '&photo=' + d.photo + '&hash=' + d.hash + '&access_token=' + VK.Auth.getSession().sid;
+    console.log(script.src);
+*/
+    VK.Api.call('photos.saveProfilePhoto',
+            {server: d.server,
+                hash: d.hash,
+                photo: d.photo},
+            function (r) {
+                if (r.response) {
+                    console.log(r.response);
+                    //saveProfileImagePopUp(r.response.photo_hash);
+                    console.log('upload');
+                }
+            })
+
+
+}
+
+function saveProfileImagePopUp(hash) {
+    VK.Api.call('saveProfilePhoto',
+            { photo_hash: hash },
+            function (r) {
+                if (r.response) {
+                    console.log(r.response)
+                    console.log('uploaded!!');
+                }
+            })
+}
+</script>
 </body>
 </html>
