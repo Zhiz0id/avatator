@@ -69,11 +69,11 @@ function loadProfile() {
 
     VK.Api.call('users.get',
             {   uid: parseInt(VK.Auth.getSession().mid),
-                fields: 'photo_max'},
+                fields: 'photo_max_orig'},
             function (r) {
                 if (r.response) {
-                    if (r.response[0].photo_max)
-                        url = r.response[0].photo_max;
+                    if (r.response[0].photo_max_orig)
+                        url = r.response[0].photo_max_orig;
 
                     loadSwf();
                 }
@@ -223,6 +223,9 @@ function saveProfileImage(data) {
                     function (r) {
                         if (r.response) {
                             console.log(r.response);
+                            addImage(r.response.photo_src);
+                            addImage(r.response.photo_src_big);
+                            addImage(r.response.photo_src_small);
                             //saveProfileImagePopUp(r.response.photo_hash);
                             console.log('upload');
                         }
@@ -234,6 +237,16 @@ function saveProfileImage(data) {
 
 }
 
+function addImage(src){
+    var imageObj = new Image();
+    imageObj.onload = function () {
+        document.body.appendChild(imageObj);
+        var div = document.createElement('span');
+        div.textContent = src;
+        document.body.appendChild(div);
+    };
+    imageObj.src = src; //"data:image/jpeg;base64," + baseSixtyFourEncodedImage;
+}
 function saveProfileImagePopUp(hash) {
     VK.Api.call('saveProfilePhoto',
             { photo_hash: hash },
