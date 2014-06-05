@@ -50,7 +50,7 @@ package vk.ui {
       }
       
       _upTextFormat.font = "Tahoma";
-      _upTextFormat.size = 11;
+      _upTextFormat.size = 16;
       
       _upText = new TextField();
       _upText.wordWrap = false;
@@ -59,7 +59,7 @@ package vk.ui {
       _upText.defaultTextFormat = _upTextFormat;
       
       _overTextFormat.font = "Tahoma";
-      _overTextFormat.size = 11;
+      _overTextFormat.size = 16;
       
       
       _overText = new TextField();

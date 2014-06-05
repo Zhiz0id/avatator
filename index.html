@@ -1,37 +1,63 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>loadImage</title>
+    <title>НОД - аватар</title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <script src="swfobject.js" type="text/javascript"></script>
-    <script src="bower_components/kineticjs/kinetic.js" type="text/javascript"></script>
-    <script src="//vk.com/js/api/openapi.js" type="text/javascript"></script>
+    <script src="/bower_components/kineticjs/kinetic.js" type="text/javascript"></script>
+    <!--<script src="//vk.com/js/api/openapi.js" type="text/javascript"></script>-->
+    <script src="//vk.com/js/api/xd_connection.js?2" type="text/javascript"></script>
+    <style>
+        @font-face {
+            font-family: 'Roboto';
+            font-style: normal;
+            font-weight: 400;
+            src: local('Roboto Regular'), local('Roboto-Regular'), url(http://themes.googleusercontent.com/static/fonts/roboto/v9/neaHiVpEUkuPmSawsrNWSg.woff) format('woff');
+        }
+    </style>
 </head>
 <body style="text-align:center" onload="bodyLoaded()">
+<!--
 <div id="login_button" onclick="VK.Auth.login(authInfo, VK.access.PHOTOS);"></div>
-<div id="flashObject"></div>
+-->
 <div id="container"></div>
-<button id="upload_button" onclick="superAction()">Login VKontakte</button>
+<div id="flashObject"></div>
+<!--<button id="upload_button" onclick="superAction()">Login VKontakte</button>-->
 <script type="text/javascript">
 
 function bodyLoaded() {
-    VK.init({
-        apiId: 4358828
-    });
 
-    VK.Observer.subscribe('auth.login', function (response) {
+    VK.init(function () {
+        //console.log('VK.init - ok');
+        VK.loadParams(document.location.href);
+        // API initialization succeeded
+        // Your code here
         loadProfile();
-    });
 
-    VK.Auth.getLoginStatus(authInfo);
+    }, function () {
+        // API initialization failed
+        // Can reload page here
+    }, '5.21');
+
+    /*VK.init({
+     apiId: 4358828
+     });*/
+
+    /*
+     VK.Observer.subscribe('auth.login', function (response) {
+     loadProfile();
+     });
+
+     VK.Auth.getLoginStatus(authInfo);
+     */
 
 }
 
 
 // url is a default main image
-var url = "http://cs618319.vk.me/v618319413/4f39/BTa0U8UFXbc.jpg";
-var logo = "hackday-logo.png";
-var sign = "http://helloiloveyou.рф";
+var url;
+var logo = "/nod-logo-transparent.png";
+var sign = "ЗаСвободу.рф";
 var swf;
 
 var stage;
@@ -45,7 +71,7 @@ var attributes = {id: "flashObject", name: "flashObject"};
 
 
 function loadSwf() {
-    swfobject.embedSWF("loadImage.swf", "flashObject", "200", "100", "9.0.0", "expressInstall.swf", flashvars, params, attributes);
+    swfobject.embedSWF("loadImage.swf", "flashObject", "201", "25", "9.0.0", "expressInstall.swf", flashvars, params, attributes);
 }
 //when loadImage.swf loaded it call this function
 function loadComplete() {
@@ -62,13 +88,15 @@ function authInfo(response) {
 
 
 function loadProfile() {
-    console.log('loadProfile');
-    var bodyEl = document.getElementsByTagName('body');
-    var buttonEl = document.getElementById('upload_button');
-    bodyEl[0].removeChild(buttonEl);
+    //console.log('loadProfile');
+    /*
+     var bodyEl = document.getElementsByTagName('body');
+     var buttonEl = document.getElementById('upload_button');
+     bodyEl[0].removeChild(buttonEl);
+     */
 
-    VK.Api.call('users.get',
-            {   uid: parseInt(VK.Auth.getSession().mid),
+    VK.api('users.get',
+            {   uid: parseInt(VK.params.viewer_id),
                 fields: 'photo_max_orig'},
             function (r) {
                 if (r.response) {
@@ -79,7 +107,7 @@ function loadProfile() {
                 }
             });
 
-    VK.Api.call('photos.getProfileUploadServer',
+    VK.api('photos.getProfileUploadServer',
             {},
             function (r) {
                 if (r.response) {
@@ -158,10 +186,10 @@ function drawImage(imageObj) {
         y: backgroundH - ((backgroundH / (backgroundW / (backgroundW / 10) )) + (backgroundW / 20)),
         text: sign,
         fontSize: stage.width() / 12,
-        fontFamily: 'sans-serif',
-        fill: 'white',
-        stroke: 'black',
-        strokeWidth: 1,
+        fontFamily: 'Roboto',
+        fill: 'black',
+        stroke: 'white',
+        strokeWidth: 0.5,
         draggable: true
     });
 
@@ -204,40 +232,32 @@ function getImageData() {
 
 function saveProfileImage(data) {
     var d = JSON.parse(data);
-    console.log(d);
+    //console.log(d);
 
+/*
     console.log("https://api.vk.com/method/photos.saveProfilePhoto?server=" + d.server + '&photo=' + d.photo + '&hash=' + d.hash + '&access_token=' + VK.Auth.getSession().sid);
+*/
 
-
-    var code = 'var d = API.photos.saveProfilePhoto({server: ' + d.server +', photo: "' + d.photo +'", hash: "' + d.hash + '"}); return [d];';
-
-    console.log(code);
-    VK.Api.call('execute',{code: code}, function(r){
-        console.log(r);
-        if(r.execute_errors){
-
-            VK.Api.call('photos.saveProfilePhoto',
-                    {server: d.server,
-                        hash: d.hash,
-                        photo: d.photo},
-                    function (r) {
-                        if (r.response) {
-                            console.log(r.response);
-                            addImage(r.response.photo_src);
-                            addImage(r.response.photo_src_big);
-                            addImage(r.response.photo_src_small);
-                            //saveProfileImagePopUp(r.response.photo_hash);
-                            console.log('upload');
-                        }
-                    })
-
-        }
-    });
+    VK.api('photos.saveProfilePhoto',
+            {server: d.server,
+                hash: d.hash,
+                photo: d.photo},
+            function (r) {
+                if (r.response) {
+                    //console.log(r.response);
+/*                    addImage(r.response.photo_src);
+                    addImage(r.response.photo_src_big);
+                    addImage(r.response.photo_src_small);*/
+                    //saveProfileImagePopUp(r.response.photo_hash);
+                    //VK.callMethod("saveProfilePhoto", r.response.hash);
+                    //console.log('upload');
+                }
+            })
 
 
 }
 
-function addImage(src){
+function addImage(src) {
     var imageObj = new Image();
     imageObj.onload = function () {
         document.body.appendChild(imageObj);
@@ -252,8 +272,8 @@ function saveProfileImagePopUp(hash) {
             { photo_hash: hash },
             function (r) {
                 if (r.response) {
-                    console.log(r.response)
-                    console.log('uploaded!!');
+                    //console.log(r.response)
+                    //console.log('uploaded!!');
                 }
             })
 }

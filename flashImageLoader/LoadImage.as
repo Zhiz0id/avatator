@@ -24,7 +24,7 @@ import flash.display.Sprite;
 import flash.text.TextField;
 
 import vk.ui.VKButton;
-[SWF(width="200", height="100", backgroundColor="#FFFFFF", frameRate="30")]
+[SWF(width="201", height="25", backgroundColor="#FFFFFF", frameRate="30")]
 
 public class LoadImage extends Sprite {
     public function loadImage(url:String):void {
@@ -37,7 +37,7 @@ public class LoadImage extends Sprite {
         l.load(r, context);
 
         function onLoadError(e:IOErrorEvent):void {
-            ExternalInterface.call("console.log", "Couldn't load image!");
+            //ExternalInterface.call("console.log", "Couldn't load image!");
 
             e.target.removeEventListener(Event.COMPLETE, onLoadComplete);
             e.target.removeEventListener(IOErrorEvent.IO_ERROR, onLoadError);
@@ -51,7 +51,7 @@ public class LoadImage extends Sprite {
             }
             catch (myError:Error) {
 
-                ExternalInterface.call("console.log", "error" + myError);
+                //ExternalInterface.call("console.log", "error" + myError);
             }
 
             // Encode
@@ -63,11 +63,11 @@ public class LoadImage extends Sprite {
 
 
     public function postImage(postUrl:String, imageData:String):void {
-        ExternalInterface.call("console.log", "postImage");
+        //ExternalInterface.call("console.log", "postImage");
         var ba:ByteArray = Base64.decodeToByteArray(imageData);
         var pd:ByteArray = UploadPostHelper.getPostData('file1', ba);
 
-        ExternalInterface.call("console.log", "postImage2");
+        //ExternalInterface.call("console.log", "postImage2");
         var l:URLLoader = new URLLoader();
 
         var r:URLRequest = new URLRequest();
@@ -76,7 +76,7 @@ public class LoadImage extends Sprite {
         r.method = URLRequestMethod.POST;
         r.data = UploadPostHelper.getPostData('file1', pd);
         r.requestHeaders.push(new URLRequestHeader('Cache-Control', 'no-cache'));
-        ExternalInterface.call("console.log", "postImage3");
+        //ExternalInterface.call("console.log", "postImage3");
         l.dataFormat = URLLoaderDataFormat.BINARY;
 
         //var context:LoaderContext = new LoaderContext(true);
@@ -85,15 +85,15 @@ public class LoadImage extends Sprite {
         l.addEventListener(IOErrorEvent.IO_ERROR, onLoadError);
         l.addEventListener(SecurityErrorEvent.SECURITY_ERROR, onLoadError);
 
-        ExternalInterface.call("console.log", "postImage4");
+        //ExternalInterface.call("console.log", "postImage4");
         try {
             l.load(r);
         } catch (e:Error) {
-            ExternalInterface.call("console.log", "error" + e);
+            //ExternalInterface.call("console.log", "error" + e);
         }
-        ExternalInterface.call("console.log", "postImage5");
+        //ExternalInterface.call("console.log", "postImage5");
         function onLoadError(e:IOErrorEvent):void {
-            ExternalInterface.call("console.log", "Couldn't upload image!");
+            //ExternalInterface.call("console.log", "Couldn't upload image!");
 
             e.target.removeEventListener(Event.COMPLETE, onLoadComplete);
             e.target.removeEventListener(IOErrorEvent.IO_ERROR, onLoadError);
@@ -103,13 +103,13 @@ public class LoadImage extends Sprite {
             e.target.removeEventListener(Event.COMPLETE, onLoadComplete);
             e.target.removeEventListener(IOErrorEvent.IO_ERROR, onLoadError);
 
-            ExternalInterface.call("console.log", "Image uploaded!");
+            //ExternalInterface.call("console.log", "Image uploaded!");
         }
     }
 
 
     public function DataUpload(postUrl:String, imageData:String):void {
-        ExternalInterface.call("console.log", "postImage1");
+        //ExternalInterface.call("console.log", "postImage1");
         var ba:ByteArray = Base64.decodeToByteArray(imageData);
 
 
@@ -119,23 +119,23 @@ public class LoadImage extends Sprite {
         l.addEventListener(Event.COMPLETE, onLoadComplete);
         l.addEventListener(IOErrorEvent.IO_ERROR, onLoadError);
         l.addEventListener(SecurityErrorEvent.SECURITY_ERROR, onLoadError);
-        ExternalInterface.call("console.log", "postImage2");
+        //ExternalInterface.call("console.log", "postImage2");
         var r:URLRequest = new URLRequest(postUrl);
         r.method = URLRequestMethod.POST;
         r.contentType = "multipart/form-data boundary=" + UploadPostHelper.getBoundary();
-        ExternalInterface.call("console.log", "postImage3");
+        //ExternalInterface.call("console.log", "postImage3");
         r.data = UploadPostHelper.getPostData('image.png', ba, "file1");
         r.requestHeaders.push(new URLRequestHeader('Cache-Control', 'no-cache'));
 
-        ExternalInterface.call("console.log", "postImage4");
+        //ExternalInterface.call("console.log", "postImage4");
         try {
             l.load(r);
         } catch (e:Error) {
-            ExternalInterface.call("console.log", "error" + e);
+            //ExternalInterface.call("console.log", "error" + e);
         }
-        ExternalInterface.call("console.log", "postImage5");
+        //ExternalInterface.call("console.log", "postImage5");
         function onLoadError(e:IOErrorEvent):void {
-            ExternalInterface.call("console.log", "Couldn't upload image!");
+            //ExternalInterface.call("console.log", "Couldn't upload image!");
 
             e.target.removeEventListener(Event.COMPLETE, onLoadComplete);
             e.target.removeEventListener(IOErrorEvent.IO_ERROR, onLoadError);
@@ -145,7 +145,7 @@ public class LoadImage extends Sprite {
             e.target.removeEventListener(Event.COMPLETE, onLoadComplete);
             e.target.removeEventListener(IOErrorEvent.IO_ERROR, onLoadError);
 
-            ExternalInterface.call("console.log", "Image uploaded!");
+            //ExternalInterface.call("console.log", "Image uploaded!");
             ExternalInterface.call("saveProfileImage", String(e.target.data));
         }
 
@@ -159,7 +159,7 @@ public class LoadImage extends Sprite {
             ExternalInterface.addCallback("DataUpload", DataUpload);
             ExternalInterface.call("loadComplete");
 
-            var button:SimpleButton = new VKButton("Сохранить изобаржение");
+            var button:SimpleButton = new VKButton("Сохранить изображение");
             button.x = 0;
             button.y = 0;
             button.addEventListener(MouseEvent.CLICK, dataUploadClick);
@@ -167,10 +167,10 @@ public class LoadImage extends Sprite {
 
 
             function dataUploadClick(e:Event):void {
-                ExternalInterface.call("console.log", "flash click");
+                //ExternalInterface.call("console.log", "flash click");
                 DataUpload(ExternalInterface.call("getUploadURL"), ExternalInterface.call("getImageData"));
-                ExternalInterface.call("console.log", "URL: " + ExternalInterface.call("getUploadURL").length);
-                ExternalInterface.call("console.log", "URL:" + ExternalInterface.call("getImageData").length);
+                //ExternalInterface.call("console.log", "URL: " + ExternalInterface.call("getUploadURL").length);
+                //ExternalInterface.call("console.log", "URL:" + ExternalInterface.call("getImageData").length);
             }
         }
 
